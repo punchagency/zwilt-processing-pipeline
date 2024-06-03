@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Excel Data</title>
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    th, td {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+  </style>
+</head>
+<body>
+  <table>
+    <% data.forEach(function(row, i) { %>
+      <tr>
+        <% Object.values(row).forEach(function(cell) { %>
+          <% if (i === 0) { %>
+            <th><%= cell %></th>
+          <% } else { %>
+            <td><%= cell %></td>
+          <% } %>
+        <% }); %>
+      </tr>
+    <% }); %>
+  </table>
+</body>
+</html>

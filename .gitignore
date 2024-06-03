@@ -1,0 +1,10 @@
+node_modules
+dist/
+.env
+.vscode
+audio
+jobFiles
+src/videoProcessor/storage
+.DS_Store
+src/videoProcessor/storage
+src/utilities/static-interview-assessment-data.ts
