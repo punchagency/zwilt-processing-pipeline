@@ -1,4 +1,4 @@
-import {Mutation, Resolver} from 'type-graphql';
+import {Query, Resolver} from 'type-graphql';
 import {Service} from 'typedi';
 
 @Service()
@@ -6,8 +6,8 @@ import {Service} from 'typedi';
 export default class InterviewResolver {
   constructor() {}
 
-  @Mutation(() => Boolean)
+  @Query(() => Boolean)
   async submitInterviewResponses() {
-    return;
+    return true;
   }
 }
