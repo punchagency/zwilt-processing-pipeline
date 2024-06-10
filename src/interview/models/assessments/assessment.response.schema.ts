@@ -1,5 +1,6 @@
 import { Field, ObjectType } from 'type-graphql';
 import {
+  getModelForClass,
   prop,
   ReturnModelType,
 } from '@typegoose/typegoose';
@@ -96,3 +97,5 @@ export class AssessmentResponse {
     return createResponse(this, input)
   }
 }
+
+export const AssessmentResponseModel = getModelForClass(AssessmentResponse);

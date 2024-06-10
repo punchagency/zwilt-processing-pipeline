@@ -27,9 +27,8 @@ import {resolvers} from './graphQL/graphQL.resolvers';
 import Routes from './restAPIs/routes';
 import {graphqlUploadExpress} from 'graphql-upload';
 import { startBackgroundJobs } from './utilities/queue';
-import { pubSub } from './config/redis-config';
-// import { BackgroundTask } from './utilities/cron/backgroundTask';
-
+// import { pubSub } from './config/redis-config';
+import { BackgroundTask } from './utilities/cron/backgroundTask';
 
 
 async function bootstrap() {
@@ -47,7 +46,7 @@ async function bootstrap() {
     container: Container,
     validate: false,
     authChecker,
-    pubSub,
+    // pubSub,
   });
 
 
@@ -235,6 +234,8 @@ async function bootstrap() {
   console.log(
     `🚀 Server started on http://localhost:${process.env.PORT}${apolloServer.graphqlPath}`
   );
+
+  new BackgroundTask().start()
 }
 
 bootstrap();

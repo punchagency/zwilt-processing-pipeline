@@ -9,11 +9,22 @@ import User from '../../../users/models/users.schema';
 import { AssessmentCategory } from './assessment.category.schema';
 import { InterviewStatus } from '../interview.schema';
 import { IsInt, Max, Min } from 'class-validator';
-import { AssessmentResponseTranscript } from './assessment.response.schema';
 
 registerEnumType(InterviewStatus, {
   name: 'InterviewStatus',
 });
+
+export enum GenerateStatus {
+  NONE = 'NONE',
+  PARTIAL = 'PARTIAL',
+  COMPLETED = 'COMPLETED',
+}
+
+
+registerEnumType(GenerateStatus, {
+  name: 'GenerateStatus',
+});
+
 
 
 @ObjectType()
@@ -28,6 +39,25 @@ export class AssessmentTopKeyword {
 }
 
 @ObjectType()
+export class InterviewReelTranscript {
+  @Field()
+  @prop()
+  text: string;
+
+  @Field()
+  @prop()
+  start: number;
+
+  @Field()
+  @prop()
+  end: number;
+
+  @Field()
+  @prop()
+  mapIndex: number;
+}
+
+@ObjectType()
 export class InterviewReel {
   @Field()
   @prop()
@@ -37,11 +67,14 @@ export class InterviewReel {
   @prop()
   video_duration?: number;
 
-  @Field(() => AssessmentResponseTranscript, { description: 'Transcript for the video reel' })
-  @prop({ type: AssessmentResponseTranscript })
-  transcript!: AssessmentResponseTranscript;
-}
+  @Field({ nullable: true })
+  @prop()
+  noOfVideosUsedForReel?: number;
 
+  @Field(() => [InterviewReelTranscript])
+  @prop()
+  transcript!: InterviewReelTranscript[];
+}
 @ObjectType()
 @modelOptions({ options: { allowMixed: Severity.ALLOW } })
 export class InterviewAssessment {
@@ -86,6 +119,14 @@ export class InterviewAssessment {
   @prop()
   interviewSummary?: string;
 
+  @Field()
+  @prop({ default: GenerateStatus.NONE})
+  interviewSummaryStatus: string;
+
+  @Field({ nullable: true })
+  @prop()
+  interviewTotalSummarized?: number;
+
   @Field({ nullable: true })
   @prop({ required: true })
   interviewLength!: number;
@@ -99,6 +140,10 @@ export class InterviewAssessment {
   })
   @prop(() => [AssessmentTopKeyword])
   topKeywords?: Ref<AssessmentTopKeyword>[];
+
+  @Field()
+  @prop({ default: GenerateStatus.NONE})
+  topKeywordsStatus: string;
   
   @Field()
   @prop({ default: Date.now })
@@ -108,3 +153,5 @@ export class InterviewAssessment {
   @prop({ default: Date.now })
   updatedAt: Date
 }
+
+

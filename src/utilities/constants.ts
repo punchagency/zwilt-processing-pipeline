@@ -1,4 +1,3 @@
-import path from 'path';
 
 export const CONSTANTS = {
   DOWNLOAD_FOLDER: './downloads',
@@ -37,24 +36,11 @@ export const videoTranscribeProcessingPath =
   '../../src/videoProcessor/storage/videoTranscribe/processing';
 export const convertedAudioPath =
   '../../src/videoProcessor/storage/videoTranscribe/convertedAudios';
-// //HLS
-export const videoHLSDownloadPath =
-  '../../src/videoProcessor/storage/videoHLS/downloads';
-export const videoHLSProcessingPath =
-  '../../src/videoProcessor/storage/videoHLS/processing';
-// HLS
-export const StoragePath = path.join(__dirname, '..', 'videoProcessor/storage');
-export const hlsDownloadPath =
-  '../../src/videoProcessor/storage/videoHls/downloads';
-export const hlsProcessingPath =
-  '../../src/videoProcessor/storage/videoHls/processing';
-export const hlsUploadPath = '../../src/videoProcessor/storage/hls/upload';
-
-//CLIPPING
-// export const videoClippingDownloadPath =
-//   '../../src/videoProcessor/storage/videoClipping/download';
-// export const videoClippingUploadPath =
-//   '../../src/videoProcessor/storage/videoClipping/upload';
+//REEL
+export const videoReelsDownloadPath =
+  '../../src/videoProcessor/storage/videoReels/downloads';
+export const videoReelsProcessingPath =
+  '../../src/videoProcessor/storage/videoReels/processing';
   
 export const videoClippingDownloadPath = 'src/videoProcessor/storage/videoClipping/download';
 export const videoClippingUploadPath = 'src/videoProcessor/storage/videoClipping/upload';

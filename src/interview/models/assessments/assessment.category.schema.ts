@@ -1,13 +1,12 @@
 import { Field, ObjectType } from 'type-graphql';
 import {
+  getModelForClass,
   modelOptions,
   prop,
   Ref,
-  ReturnModelType,
   Severity,
 } from '@typegoose/typegoose';
 import { AssessmentResponse } from './assessment.response.schema';
-import createCategory from './methods/createCategory';
 
 @modelOptions({ options: { allowMixed: Severity.ALLOW } })
 @ObjectType()
@@ -38,11 +37,6 @@ export class AssessmentCategory {
   @Field()
   @prop({ default: Date.now })
   updatedAt: Date
-
-  public static async createCategory(
-    this: ReturnModelType<typeof AssessmentCategory>,
-    input: any
-  ) {
-    return createCategory(this, input);
-  }
 }
+
+export const AssessmentCategoryModel = getModelForClass(AssessmentCategory);

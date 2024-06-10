@@ -1,4 +1,5 @@
 import {
+  getModelForClass,
   index,
   modelOptions,
   prop,
@@ -13,7 +14,6 @@ import { Field } from 'type-graphql';
 class User {
   @Field()
   _id: string;
-
 
   @Field()
   @prop({
@@ -32,3 +32,5 @@ class User {
 }
 
 export default User;
+
+export const UserModel = getModelForClass(User);

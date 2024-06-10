@@ -7,24 +7,24 @@ function convertToSeconds(milliseconds: number) {
 export function mapTranscriptWordsToObjects(transcriptWords: AssessmentResponseTranscriptWords[], index:number) {
     let mappedTranscripts = [];
     let currentTranscript = {
-        transcript: '',
+        text: '',
         start: convertToSeconds(transcriptWords[0].start),
         end: 0,
         mapIndex: index
     };
 
     transcriptWords.forEach(word => {
-        if (currentTranscript.transcript) {
-            currentTranscript.transcript += ` ${word.text}`;
+        if (currentTranscript.text) {
+            currentTranscript.text += ` ${word.text}`;
         } else {
-            currentTranscript.transcript = word.text;
+            currentTranscript.text = word.text;
         }
         currentTranscript.end = convertToSeconds(word.end);
 
         if (word.text.endsWith('.')) {
             mappedTranscripts.push(currentTranscript);
             currentTranscript = {
-                transcript: '',
+                text: '',
                 start: 0,
                 end: 0,
                 mapIndex: index
@@ -34,7 +34,7 @@ export function mapTranscriptWordsToObjects(transcriptWords: AssessmentResponseT
         }
     });
 
-    if (currentTranscript.transcript) {
+    if (currentTranscript.text) {
         mappedTranscripts.push(currentTranscript);
     }
 

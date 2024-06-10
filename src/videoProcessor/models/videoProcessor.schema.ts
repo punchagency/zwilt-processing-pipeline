@@ -7,6 +7,11 @@ import {
 import {Field, ObjectType} from 'type-graphql';
 import {VideoDataInput} from '../../videoProcessor/dto/inputs/videoProcessorData';
 import saveVideoForProcessing from '../../videoProcessor/methods/saveVideoForProcessing';
+import getInterviewAssessmentToProcess from '../../videoProcessor/methods/reels/getInterviewAssessmentToProcess';
+import downloadVideosLocally from '../../videoProcessor/methods/downloadVideosLocally';
+import generateVideoReel from '../../videoProcessor/methods/reels/generateVideoReel';
+import { VIDEO_OPERATION_TYPE } from '../../videoProcessor/services/enum';
+import uploadFileToAws from '../../videoProcessor/methods/uploadFileToAws';
 
 
 @ObjectType()
@@ -29,15 +34,7 @@ export class Video {
 
   @Field()
   @prop()
-  isPreviewed?: boolean;
-
-  @Field()
-  @prop({default: false})
-  isHlsConverted?: boolean;
-
-  @Field()
-  @prop()
-  isHLSProcessed?: boolean;
+  isReelGenerated?: boolean;
 
   @Field()
   @prop()
@@ -70,6 +67,36 @@ class VideoProcessor {
     input: VideoDataInput
   ): Promise<VideoProcessor> {
     return saveVideoForProcessing(this, input);
+  }
+
+  public static async getInterviewAssessmentToProcess(
+    this: ReturnModelType<typeof VideoProcessor>,
+    type?: string,
+  ) {
+    return getInterviewAssessmentToProcess(this, type);
+  }
+
+  public static async downloadVideosLocally(
+    this: ReturnModelType<typeof VideoProcessor>,
+    type: VIDEO_OPERATION_TYPE,
+    links: string[]
+  ) {
+    return downloadVideosLocally(type, links);
+  }
+
+  public static async generateVideoReel(
+    this: ReturnModelType<typeof VideoProcessor>,
+    assessmentId: string,
+    filteredInterviewAssessment: any,
+    links: string[],
+  ) {
+    return generateVideoReel(this, assessmentId, filteredInterviewAssessment, links);
+  }
+
+  public static async uploadFileToAws(
+  videoFilePath: string
+  ) {
+    return uploadFileToAws(videoFilePath);
   }
 }
 
