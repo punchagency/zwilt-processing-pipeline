@@ -1,10 +1,10 @@
 import https from 'https';
 import download from 'download';
 import { join } from 'path';
-import { CONSTANTS, videoReelsDownloadPath, videoTranscribeDownloadPath } from './../../utilities/constants';
+import { CONSTANTS } from './../../utilities/constants';
 import ClientResponse from '../../utilities/response';
 import { VIDEO_OPERATION_TYPE } from '../../videoProcessor/services/enum';
-import { deleteFilesInDirectory, ensureDirectoryExists, filterUrl } from '../../videoProcessor/services/utils';
+import { ensureDirectoryExists, filterUrl } from '../../videoProcessor/services/utils';
 import fs from 'fs-extra';
 
 const downloadVideosLocally = async (type: VIDEO_OPERATION_TYPE, links: string[]) => {
@@ -32,8 +32,9 @@ const downloadVideosLocally = async (type: VIDEO_OPERATION_TYPE, links: string[]
         if (validLinks.length === 0) {
             return new ClientResponse(404, false, 'No valid videos to download', null);
         }
-
-        const downloadPath = join(__dirname, type === VIDEO_OPERATION_TYPE.TRANSCRIBE ? videoTranscribeDownloadPath : videoReelsDownloadPath);
+        const downloadReelDir = '../storage/videoReels/downloads'
+        const downloadTranscribeDir = '../storage/videoTranscribe/downloads'
+        const downloadPath = join(__dirname, type === VIDEO_OPERATION_TYPE.TRANSCRIBE ? downloadTranscribeDir : downloadReelDir);
 
         // Ensure the directory exists
         await ensureDirectoryExists(downloadPath);
@@ -59,7 +60,6 @@ const downloadVideosLocally = async (type: VIDEO_OPERATION_TYPE, links: string[]
                 return new ClientResponse(500, false, `File not downloaded: ${filePath}`, null);
             }
         }
-        deleteFilesInDirectory(downloadPath);
         return 'success';
     } catch (error) {
         console.error('Error occurred when downloading videos.', error);
