@@ -3,6 +3,7 @@ import { mapTranscriptWordsToObjects } from "../../../utilities/transcripts/form
 import {join} from 'path';
 import { promises as fs } from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
+import { ensureDirectoryExists } from '../utils';
 // import { OpenAIService } from '../../../utilities/openAi/OpenAIService';
 
 export const transcriptWords = [
@@ -212,38 +213,6 @@ export const generateVideoReelTest = async () => {
     const videoPath = [`${videoDir}/mAiiSINo_16952049601571.mp4`, `${videoDir}/sfyCcI4l_16952052294213.mp4`];
     // const videoPath = [`${videoDir}/MPXZOCA3_16953923046091_001.mp4`, `${videoDir}/EB7anzQS_16953927236492_002.mp4`, `${videoDir}/6U7jtOzY_16953930577403_003.mp4`];
 
-  
-    async function checkFileAndDirectory(filePath: any) {
-        try {
-            // Check if directory exists
-            await fs.access(videoDir);
-            console.log('Directory exists:', videoDir);
-
-            // Log all items in the directory
-            const files = await fs.readdir(videoDir);
-            console.log('Files in directory:', files);
-        } catch (err) {
-            console.error('Directory does not exist. Creating directory:', videoDir);
-            try {
-                // Create directory if it doesn't exist
-                await fs.mkdir(videoDir, { recursive: true });
-                console.log('Directory created successfully:', videoDir);
-            } catch (mkdirErr) {
-                console.error('Error creating directory:', mkdirErr);
-                return false;
-            }
-        }
-
-        try {
-            // Check if file exists
-            await fs.access(filePath);
-            console.log('File exists:', filePath);
-            return true;
-        } catch (err) {
-            console.error('File does not exist:', filePath);
-            return false;
-        }
-    }
     try {
         // Analyze the mapped transcripts with OpenAI
         // const prompt = `From the following transcripts, select the ones with key moments and return them in the exact same format they currently are:\n\n${JSON.stringify(allMappedTranscripts)}`;
@@ -296,11 +265,8 @@ export const generateVideoReelTest = async () => {
             const tempFile = `${videoDir}/temp_${mapIndex}_${start}_${end}.mp4`;
             tempFiles.push(tempFile);
 
-            const fileExists = await checkFileAndDirectory(videoPath);
-            if (!fileExists) {
-                console.error('Cannot process video because the file or directory does not exist.');
-                return;
-            }
+            // Ensure the directory exists
+        // await ensureDirectoryExists(videoPath);
 
             await new Promise<void>((resolve, reject) => {
                 ffmpeg(videoFile)
