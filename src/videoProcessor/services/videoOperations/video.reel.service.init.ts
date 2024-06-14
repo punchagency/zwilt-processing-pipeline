@@ -3,7 +3,7 @@ import { mapTranscriptWordsToObjects } from "../../../utilities/transcripts/form
 import {join} from 'path';
 import { promises as fs } from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
-import { OpenAIService } from '../../../utilities/openAi/OpenAIService';
+// import { OpenAIService } from '../../../utilities/openAi/OpenAIService';
 
 export const transcriptWords = [
     {
@@ -161,8 +161,9 @@ export const getMappedTranscript = async () => {
 
 
 
-export const generateVideoReel = async (_: any, res: any) => {
-    const openAIService = new OpenAIService();
+// export const generateVideoReelTest = async (_: any, res: any) => {
+export const generateVideoReelTest = async () => {
+    // const openAIService = new OpenAIService();
 
     // const allMappedTranscripts = [
     //     {
@@ -203,33 +204,52 @@ export const generateVideoReel = async (_: any, res: any) => {
     //     }
     // ];
 
-    const allMappedTranscripts = await getMappedTranscript();
+    // const allMappedTranscripts = await getMappedTranscript();
     
-    // return allMappedTranscripts;
-    const videoDir = join(__dirname, '../../storage/tempVideos');
-    // const videoPath = [`${videoDir}/mAiiSINo_16952049601571.mp4`, `${videoDir}/sfyCcI4l_16952052294213.mp4`];
-    const videoPath = [`${videoDir}/MPXZOCA3_16953923046091_001.mp4`, `${videoDir}/EB7anzQS_16953927236492_002.mp4`, `${videoDir}/6U7jtOzY_16953930577403_003.mp4`];
+    // const videoDir = join(__dirname, '../../storage/tempVideos');
+
+    const videoDir = join(__dirname, '../../storage/videoReels/downloads');
+    const videoPath = [`${videoDir}/mAiiSINo_16952049601571.mp4`, `${videoDir}/sfyCcI4l_16952052294213.mp4`];
+    // const videoPath = [`${videoDir}/MPXZOCA3_16953923046091_001.mp4`, `${videoDir}/EB7anzQS_16953927236492_002.mp4`, `${videoDir}/6U7jtOzY_16953930577403_003.mp4`];
 
     try {
         // Analyze the mapped transcripts with OpenAI
-        const prompt = `From the following transcripts, select the ones with key moments and return them in the exact same format they currently are:\n\n${JSON.stringify(allMappedTranscripts)}`;
-        const response = await openAIService.analyzeTranscript(prompt);
+        // const prompt = `From the following transcripts, select the ones with key moments and return them in the exact same format they currently are:\n\n${JSON.stringify(allMappedTranscripts)}`;
+        // const response = await openAIService.analyzeTranscript(prompt);
+        const response = [
+            {
+                "transcript": "But I do more with the mainstack.",
+                "start": 26.232,
+                "end": 31.584,
+                "mapIndex": 0
+            },
+            {
+                "transcript": "I have built API, I have integrated database and payment solution systems, I have developed a well optimized website that low faster and is easy to use in terms of user interactiveness.",
+                "start": 36.016,
+                "end": 61.5,
+                "mapIndex": 0
+            }
+        ];
+    
 
         console.log('Raw response from OpenAI:', response);
 
         if (response === null) {
             console.error('OpenAI returned null');
-            res.status(500).json({ error: 'Failed to get a valid response from OpenAI' });
+            // res.status(500).json({ error: 'Failed to get a valid response from OpenAI' });
+            return { error: 'Failed to get a valid response from OpenAI' };
             return;
         }
 
         let keyMoments;
         try {
-            keyMoments = JSON.parse(response);
+            keyMoments = response;
+            // keyMoments = JSON.parse(response);
         } catch (jsonError) {
             console.error('JSON parse error:', jsonError);
             console.error('Response:', response);
-            res.status(500).json({ error: 'Failed to parse response from OpenAI' });
+            // res.status(500).json({ error: 'Failed to parse response from OpenAI' });
+            return { error: 'Failed to parse response from OpenAI' };
             return;
         }
 
@@ -295,10 +315,12 @@ export const generateVideoReel = async (_: any, res: any) => {
         console.log('Total Duration of Stitched Reels:', totalDuration);
 
         // Send response
-        res.json({ video_reel: outputReel });
+        // res.json({ video_reel: outputReel });
+        return { video_reel: outputReel };
 
     } catch (error) {
         console.error('Error in generateVideoReel:', error);
-        res.status(500).json({ error: 'Failed to generate video reel' });
+        // res.status(500).json({ error: 'Failed to generate video reel' });
+        return { error: 'Failed to generate video reel' };
     }
 };

@@ -33,7 +33,7 @@ const downloadVideosLocally = async (type: VIDEO_OPERATION_TYPE, links: string[]
         }
 
         const downloadPath = join(scriptDirectory, type === VIDEO_OPERATION_TYPE.TRANSCRIBE ? videoTranscribeDownloadPath : videoReelsDownloadPath);
-
+        console.log("Downloading Video...");
         await Promise.all(validLinks.map(url => download(url, downloadPath, {
             filename: encodeURIComponent(filterUrl(url)),
         })));
