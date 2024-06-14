@@ -4,7 +4,7 @@ import { join } from 'path';
 import { CONSTANTS, videoReelsDownloadPath, videoTranscribeDownloadPath } from './../../utilities/constants';
 import ClientResponse from '../../utilities/response';
 import { VIDEO_OPERATION_TYPE } from '../../videoProcessor/services/enum';
-import { ensureDirectoryExists, filterUrl } from '../../videoProcessor/services/utils';
+import { deleteFilesInDirectory, ensureDirectoryExists, filterUrl } from '../../videoProcessor/services/utils';
 import fs from 'fs-extra';
 
 const downloadVideosLocally = async (type: VIDEO_OPERATION_TYPE, links: string[]) => {
@@ -59,7 +59,7 @@ const downloadVideosLocally = async (type: VIDEO_OPERATION_TYPE, links: string[]
                 return new ClientResponse(500, false, `File not downloaded: ${filePath}`, null);
             }
         }
-
+        deleteFilesInDirectory(downloadPath);
         return 'success';
     } catch (error) {
         console.error('Error occurred when downloading videos.', error);
