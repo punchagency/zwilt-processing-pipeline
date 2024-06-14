@@ -3,7 +3,6 @@ import { mapTranscriptWordsToObjects } from "../../../utilities/transcripts/form
 import {join} from 'path';
 import { promises as fs } from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
-import { ensureDirectoryExists } from '../utils';
 // import { OpenAIService } from '../../../utilities/openAi/OpenAIService';
 
 export const transcriptWords = [
