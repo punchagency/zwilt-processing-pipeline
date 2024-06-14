@@ -41,11 +41,9 @@ const downloadVideosLocally = async (type: VIDEO_OPERATION_TYPE, links: string[]
 
         console.log("Downloading Video...");
         await Promise.all(validLinks.map(async (url) => {
-            const filePath = join(downloadPath, encodeURIComponent(filterUrl(url)));
-            console.log(`Downloading: ${url} to ${filePath}`);
-            await download(url, downloadPath, { filename: encodeURIComponent(filterUrl(url)) });
-            console.log(`Downloaded: ${url} to ${filePath}`);
+        await download(url, downloadPath, { filename: encodeURIComponent(filterUrl(url)) });
         }));
+
 
         console.log('Videos Downloaded...', downloadPath);
 
