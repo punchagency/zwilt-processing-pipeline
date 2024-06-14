@@ -223,8 +223,15 @@ export const generateVideoReelTest = async () => {
             const files = await fs.readdir(videoDir);
             console.log('Files in directory:', files);
         } catch (err) {
-            console.error('Directory does not exist:', videoDir);
-            return false;
+            console.error('Directory does not exist. Creating directory:', videoDir);
+            try {
+                // Create directory if it doesn't exist
+                await fs.mkdir(videoDir, { recursive: true });
+                console.log('Directory created successfully:', videoDir);
+            } catch (mkdirErr) {
+                console.error('Error creating directory:', mkdirErr);
+                return false;
+            }
         }
 
         try {
