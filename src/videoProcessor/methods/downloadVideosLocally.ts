@@ -38,7 +38,7 @@ const downloadVideosLocally = async (type: VIDEO_OPERATION_TYPE, links: string[]
             filename: encodeURIComponent(filterUrl(url)),
         })));
 
-        console.log('Videos Downloaded...');
+        console.log('Videos Downloaded...', downloadPath);
         return 'success';
     } catch (error) {
         console.error('Error occurred when downloading videos.', error);
