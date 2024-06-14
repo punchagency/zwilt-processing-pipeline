@@ -1,10 +1,10 @@
 import https from 'https';
 import download from 'download';
 import { join } from 'path';
-import { CONSTANTS, scriptDirectory, videoReelsDownloadPath, videoTranscribeDownloadPath } from './../../utilities/constants';
+import { CONSTANTS, videoReelsDownloadPath, videoTranscribeDownloadPath } from './../../utilities/constants';
 import ClientResponse from '../../utilities/response';
 import { VIDEO_OPERATION_TYPE } from '../../videoProcessor/services/enum';
-import { deleteFilesInDirectory, filterUrl } from '../../videoProcessor/services/utils';
+import { ensureDirectoryExists, filterUrl } from '../../videoProcessor/services/utils';
 
 const downloadVideosLocally = async (type: VIDEO_OPERATION_TYPE, links: string[]) => {
     try {
@@ -32,17 +32,18 @@ const downloadVideosLocally = async (type: VIDEO_OPERATION_TYPE, links: string[]
             return new ClientResponse(404, false, 'No valid videos to download', null);
         }
 
-        const downloadPathOld = join(scriptDirectory, type === VIDEO_OPERATION_TYPE.TRANSCRIBE ? videoTranscribeDownloadPath : videoReelsDownloadPath);
         const downloadPath = join(__dirname, type === VIDEO_OPERATION_TYPE.TRANSCRIBE ? videoTranscribeDownloadPath : videoReelsDownloadPath);
+       
+         // Ensure the directory exists
+         await ensureDirectoryExists(downloadPath);
+       
         console.log("Downloading Video...");
         await Promise.all(validLinks.map(url => download(url, downloadPath, {
             filename: encodeURIComponent(filterUrl(url)),
         })));
 
         console.log('Videos Downloaded...', downloadPath);
-        deleteFilesInDirectory(downloadPathOld);
-        // /app/src/videoProcessor/storage/videoReels/downloads
-        // /app/dist/videoProcessor/storage/videoReels/downloads
+
         return 'success';
     } catch (error) {
         console.error('Error occurred when downloading videos.', error);

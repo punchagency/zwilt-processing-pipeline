@@ -103,3 +103,20 @@ export async function uploadFileToAWS(filePath: string, bucketName: string) {
   };
   return await s3ClientPutObject(params);
 }
+
+
+export const ensureDirectoryExists = async (directoryPath: any) => {
+  try {
+      await fs.access(directoryPath);
+      console.log('Directory exists:', directoryPath);
+  } catch (err) {
+      console.error('Directory does not exist. Creating directory:', directoryPath);
+      try {
+          await fs.mkdir(directoryPath, { recursive: true });
+          console.log('Directory created successfully:', directoryPath);
+      } catch (mkdirErr) {
+          console.error('Error creating directory:', mkdirErr);
+          throw new Error(`Error creating directory: ${mkdirErr.message}`);
+      }
+  }
+};
