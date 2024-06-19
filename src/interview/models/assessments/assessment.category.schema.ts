@@ -27,7 +27,7 @@ export class AssessmentCategory {
   totalQuestionsInCategory!: number;
 
   @Field(() => [AssessmentResponse])
-  @prop()
+  @prop({ ref: () => AssessmentCategory })
   assessmentResponse!: Ref<AssessmentResponse>[];
 
   @Field()

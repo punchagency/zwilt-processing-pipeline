@@ -1,11 +1,13 @@
+// import InterviewComment from '../../../clients/models/submodels/interviewComments/interviewComment.schema';
 import { Field, ObjectType } from 'type-graphql';
 import {
-  getModelForClass,
   prop,
+  Ref,
   ReturnModelType,
 } from '@typegoose/typegoose';
 import createResponse from './methods/createResponse';
-
+import { AssessmentCategory } from './assessment.category.schema'
+import { getModelForClass } from '@typegoose/typegoose';
 
 @ObjectType()
 export class AssessmentResponseTranscriptWords {
@@ -27,7 +29,7 @@ export class AssessmentResponseTranscript {
   @Field()
   @prop()
   id: string;
-  
+
   @Field()
   @prop()
   text: string;
@@ -38,14 +40,29 @@ export class AssessmentResponseTranscript {
 }
 
 @ObjectType()
+export class AssessmentResponseTranscriptWithTimestamps {
+  @Field()
+  @prop()
+  timestamp: string;
+
+  @Field()
+  @prop()
+  phrase: string;
+}
+
+@ObjectType()
 export class AssessmentResponse {
   @Field()
   _id: string;
 
+  @Field(() => AssessmentCategory)
+  @prop()
+  category: Ref<AssessmentCategory>
+
   @Field()
   @prop()
   questionId: string;
-  
+
   @Field()
   @prop()
   question!: string;
@@ -68,7 +85,27 @@ export class AssessmentResponse {
 
   @Field(() => AssessmentResponseTranscript, { description: 'AssessmentResponseTranscript for the video interview' })
   @prop({ type: AssessmentResponseTranscript })
-  transcript!: AssessmentResponseTranscript;
+  transcript: AssessmentResponseTranscript;
+
+  @Field(() => [AssessmentResponseTranscriptWithTimestamps], { description: 'submission transcript with timestamps' })
+  @prop()
+  transcriptWithTimestamps: AssessmentResponseTranscriptWithTimestamps[];
+
+  @Field()
+  @prop()
+  timer: number;
+
+  @Field()
+  @prop()
+  uniqueId: string;
+
+  @Field()
+  @prop()
+  followOnNumber: number;
+
+  @Field()
+  @prop()
+  questionNumber: number;
 
   @Field()
   @prop()
@@ -91,7 +128,7 @@ export class AssessmentResponse {
   updatedAt: Date
 
   public static async createResponse(
-    this: ReturnModelType<typeof AssessmentResponse>,
+    this: ReturnModelType<typeof AssessmntResponse>,
     input: any
   ) {
     return createResponse(this, input)

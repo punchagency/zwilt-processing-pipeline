@@ -44,3 +44,5 @@ export const videoReelsProcessingPath =
   
 export const videoClippingDownloadPath = 'src/videoProcessor/storage/videoClipping/download';
 export const videoClippingUploadPath = 'src/videoProcessor/storage/videoClipping/upload';
+export const interviewResponseScreenshot = 'src/videoProcessor/storage/interviewResponses/screenshots';
+export const interviewResponseVideo = 'src/videoProcessor/storage/interviewResponses/videos';
