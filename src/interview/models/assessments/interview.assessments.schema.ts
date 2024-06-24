@@ -9,6 +9,7 @@ import User from '../../../users/models/users.schema';
 import { AssessmentCategory } from './assessment.category.schema';
 import { InterviewStatus } from '../interview.schema';
 import { IsInt, Max, Min } from 'class-validator';
+import { getModelForClass } from '@typegoose/typegoose';
 
 registerEnumType(InterviewStatus, {
   name: 'InterviewStatus',
@@ -76,7 +77,10 @@ export class InterviewReel {
   transcript!: InterviewReelTranscript[];
 }
 @ObjectType()
-@modelOptions({ options: { allowMixed: Severity.ALLOW } })
+@modelOptions({
+  options: { allowMixed: Severity.ALLOW },
+  schemaOptions: { timestamps: true },
+})
 export class InterviewAssessment {
   @Field()
   _id: string;
@@ -97,23 +101,27 @@ export class InterviewAssessment {
   @prop({ default: InterviewStatus.PENDING, required: true })
   status: string;
 
-  @Field(() => Boolean, {description: 'Indicates if this assessment profile has been contacted.'})
-  @prop({ default: false})
+  @Field(() => Boolean, { description: 'Indicates if this assessment profile has been contacted.' })
+  @prop({ default: false })
   contacted: boolean;
-  
+
   @Field()
   @prop({
     required: true,
-    default: 5,
+    default: 0,
     validate: {
-      validator: (value: number) => value >= 1 && value <= 100,
-      message: 'completionRatio must be between 1 and 100',
+      validator: (value: number) => value >= 0 && value <= 100,
+      message: 'completionRatio must be between 0 and 100',
     },
   })
   @IsInt()
-  @Min(1)
+  @Min(0)
   @Max(100)
   completionRatio!: number;
+
+  @Field({ nullable: true })
+  @prop()
+  questionSummary?: string;
 
   @Field({ nullable: true })
   @prop()
@@ -128,8 +136,8 @@ export class InterviewAssessment {
   interviewTotalSummarized?: number;
 
   @Field({ nullable: true })
-  @prop({ required: true })
-  interviewLength!: number;
+  @prop()
+  interviewLength: number;
 
   @Field(() => InterviewReel, { nullable: true })
   @prop({ _id: false })
@@ -142,10 +150,6 @@ export class InterviewAssessment {
   topKeywords?: Ref<AssessmentTopKeyword>[];
 
   @Field()
-  @prop({ default: GenerateStatus.NONE})
-  topKeywordsStatus: string;
-  
-  @Field()
   @prop({ default: Date.now })
   createdAt: Date;
 
@@ -154,4 +158,4 @@ export class InterviewAssessment {
   updatedAt: Date
 }
 
-
+export default getModelForClass(InterviewAssessment);
