@@ -7,24 +7,24 @@ export class BackgroundTask extends Tasks {
       this.TestTask();
     });
 
-    cron.schedule('*/10 * * * *', () => {  // execute every 10 minutes
-      this.processTopkeywords();
-    });
+    // cron.schedule('*/10 * * * *', () => {  // execute every 10 minutes
+    //   this.processTopkeywords();
+    // });
 
-    cron.schedule('*/10 * * * *', () => {  // execute every 10 minutes
-      this.processTranscriptSummary();
-    });
+    // cron.schedule('*/10 * * * *', () => {  // execute every 10 minutes
+    //   this.processTranscriptSummary();
+    // });
 
-    cron.schedule('*/15 * * * *', () => {  // execute every 15 minutes
-      this.processQuestionSummary();
-    });
+    // cron.schedule('*/15 * * * *', () => {  // execute every 15 minutes
+    //   this.processQuestionSummary();
+    // });
 
-    cron.schedule('*/20 * * * *', () => {  // execute every 20 minutes
-      // this.processVideoTranscribe();
-    });
+    // cron.schedule('*/20 * * * *', () => {  // execute every 20 minutes
+    //   // this.processVideoTranscribe();
+    // });
 
-    cron.schedule('*/30 * * * *', () => {  // execute every 30 minutes
-      this.processVideoReels();
-    });
+    // cron.schedule('*/30 * * * *', () => {  // execute every 30 minutes
+    //   this.processVideoReels();
+    // });
   }
 }
