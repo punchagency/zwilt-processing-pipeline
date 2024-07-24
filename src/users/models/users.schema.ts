@@ -27,8 +27,12 @@ class User {
   name: string;
 
   @Field()
-  @prop({required: true})
+  @prop({ required: true })
   email: string;
+
+  @Field()
+  @prop()
+  profile_img: string;
 }
 
 export default User;
