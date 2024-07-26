@@ -22,7 +22,7 @@ export const getQuestionsFromDatabase = async (): Promise<ClientResponse | null>
         console.log("No transcript record to summarize");
         return new ClientResponse(404, false, "No transcript record to summarize", null);
       }
-
+      console.log("assessmentsWithoutQuestionSummary....[......]", assessmentsWithoutQuestionSummary);
       let assessmentsProcessed = false; // Flag to track if any assessments were processed in this loop iteration
 
       for (const response of assessmentsWithoutQuestionSummary) {
