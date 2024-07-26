@@ -57,7 +57,7 @@ export class BackgroundTask extends Tasks {
 
   public async start() {
     if (await this.shouldRunInterviewCron()) {
-      cron.schedule('*/5 * * * *', () => {
+      cron.schedule('*/2 * * * *', () => {
         this.processQuestionSummaryWithLock();
       });
     } else {
