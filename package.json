@@ -20,6 +20,7 @@
     "dev:tsc": "tsc -w",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",
+    "postbuild": "cpy ./src/utilities/mailer/html/ ./dist/utilities/mailer/html/ --flat",
     "prepare": "husky install",
     "heroku-prebuild": "npm cache clean -f"
   },
@@ -72,6 +73,7 @@
     "class-validator": "^0.14.1",
     "connect-mongodb-session": "^3.1.1",
     "cors": "^2.8.5",
+    "cpy-cli": "^4.2.0",
     "currency-formatter": "^1.5.9",
     "date-fns": "^2.29.3",
     "dotenv": "^16.0.1",
