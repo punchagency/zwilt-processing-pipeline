@@ -11,6 +11,10 @@ export class Task {
   @prop()
   shouldRunInterviewCron?: boolean;
 
+  @Field({ nullable: true })
+  @prop({default: false})
+  isCronRunning?: boolean;
+
   @Field()
   @prop({ default: Date.now, required: true })
   createdAt: Date;
