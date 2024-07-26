@@ -40,7 +40,7 @@ export class BackgroundTask extends Tasks{
       // });
 
       cron.schedule('*/10 * * * *', () => {  // execute every 30 minutes
-        this.processVideoReels();
+        // this.processVideoReels();
       });
     } else {
       console.log('Interview cron job is disabled.');
