@@ -36,7 +36,7 @@ export async function convertVideoToMP3() {
 
     const outputMP3 = join(outputDirectory, basename(inputVideo, '.mp4') + '.mp3');
 
-    process.env.NODE_ENV !== 'local' ? ffmpeg.setFfmpegPath('/app/bin/ffmpeg') : ffmpeg.setFfmpegPath('/usr/local/bin/ffmpeg'); 
+    // process.env.NODE_ENV !== 'local' ? ffmpeg.setFfmpegPath('/app/bin/ffmpeg') : ffmpeg.setFfmpegPath('/usr/local/bin/ffmpeg'); 
     console.log("InputVideo...", inputVideo);
     console.log("Output Mp3...", outputMP3);
     ffmpeg()
