@@ -31,15 +31,15 @@ export class BackgroundTask extends Tasks{
         this.processQuestionSummary();
       });
 
-      cron.schedule('*/20 * * * *', () => {  // execute every 20 minutes
+      cron.schedule('*/10 * * * *', () => {  // execute every 20 minutes
         this.downloadAndProcessVideoTranscribe();
       });
 
-      cron.schedule('*/15 * * * *', () => {  // execute every 20 minutes
-        this.processVideoTranscribe();
-      });
+      // cron.schedule('*/15 * * * *', () => {  // execute every 20 minutes
+      //   this.processVideoTranscribe();
+      // });
 
-      cron.schedule('*/30 * * * *', () => {  // execute every 30 minutes
+      cron.schedule('*/10 * * * *', () => {  // execute every 30 minutes
         this.processVideoReels();
       });
     } else {
