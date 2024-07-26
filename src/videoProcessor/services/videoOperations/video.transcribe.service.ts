@@ -1,5 +1,5 @@
 import axios from 'axios';
-import fs from 'fs-extra';
+import fs, { ensureDir } from 'fs-extra';
 import {join} from 'path';
 import {
   convertedAudioPath,
@@ -25,6 +25,12 @@ export const assemblyAITranscribeAudio =
       };
 
       const convertedAudioDir = join(__dirname, convertedAudioPath);
+      const processingDir = join(__dirname, videoTranscribeProcessingPath);
+
+          // Ensure the directories exist
+    await ensureDir(convertedAudioDir);
+    await ensureDir(processingDir);
+    
       const audioFiles = fs.readdirSync(convertedAudioDir);
 
       if (audioFiles.length > 0) {
@@ -33,10 +39,7 @@ export const assemblyAITranscribeAudio =
           __dirname,
           convertedAudioPath + '/' + audioFileName
         );
-        const processingDir = join(
-          __dirname,
-          videoTranscribeProcessingPath
-        );
+
         const path = join(__dirname, convertedAudioPath, audioFileName);
         const audioData = await fs.readFile(path);
         console.log('Connecting to assembly AI...');

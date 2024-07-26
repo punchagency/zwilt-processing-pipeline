@@ -7,7 +7,7 @@ import ClientResponse from '../../../utilities/response';
 import VideoProcessor from "../../../videoProcessor/models/videoProcessor.schema";
 import { ReturnModelType } from "@typegoose/typegoose";
 import InterviewAssessmentModel from "../../../interview/models/assessments/interview.assessments.model";
-import { deleteFilesInDirectory } from "../../../videoProcessor/services/utils";
+import { deleteFilesInDirectory, ensureDirectoryExists } from "../../../videoProcessor/services/utils";
 import { InterviewReelTranscript } from "../../../interview/models/assessments/interview.assessments.schema";
 import ErrorLogService from "../../../errorLog/error.log.service";
 
@@ -25,6 +25,8 @@ export default async function generateVideoReel(
 
 
     try {
+         // Ensure the directory exists
+        await ensureDirectoryExists(videoDir);
         // Analyze the mapped transcripts with OpenAI
         const prompt = `From the following transcripts, select the ones with key moments and return them in the exact same format they currently are:\n\n${JSON.stringify(allMappedTranscripts)}`;
         const response = await openAIService.analyzeTranscript(prompt);
