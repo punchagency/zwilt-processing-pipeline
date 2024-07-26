@@ -30,6 +30,7 @@ export const assemblyAITranscribeAudio =
           // Ensure the directories exist
     await ensureDir(convertedAudioDir);
     await ensureDir(processingDir);
+
     
       const audioFiles = fs.readdirSync(convertedAudioDir);
 
@@ -133,14 +134,10 @@ const updateDocument = async (
   processingDir: string
 ) => {
   try {
-    const inputVideoPath = join(
-      __dirname,
-      videoTranscribeDownloadPath + '/' + initialFilename
-    );
-    const videoCleanUpDownloadDir = join(
-      __dirname,
-      videoCleanUpDownloadPath
-    );
+    const inputVideoPath = join(__dirname, videoTranscribeDownloadPath + '/' + initialFilename);
+    const videoCleanUpDownloadDir = join(__dirname, videoCleanUpDownloadPath);
+
+    await ensureDir(videoCleanUpDownloadDir);
 
     const filter = {'video_link': initialFilename};
     const update = {$set: {'transcript': transcriptionResult}};
