@@ -39,29 +39,8 @@ async function bootstrap() {
     // pubSub,
   });
 
-
-  const whitelist = [
-    process.env.CLIENT_SIDE_URL,
-    process.env.GRAPH_STUDIO,
-  ];
   const corsOptions = {
-    origin(
-      origin: string | undefined,
-      callback: (arg0: Error | null, arg1: boolean | undefined) => void
-    ) {
-      if (
-        origin === undefined ||
-        whitelist.indexOf(origin) !== -1 ||
-        /^https:\/\/(.*\.)?zwilt.com$/.test(origin) ||
-        (process.env.NODE_ENV !== 'production' &&
-          /^https?:\/\/localhost:\d{4}$/.test(origin))
-      ) {
-        callback(null, true);
-      } else {
-        console.log('origin not allowed ===>', origin);
-        callback(new Error('Not allowed by CORS'), false);
-      }
-    },
+    origin: [`${process.env.CLIENT_SIDE_URL}`, `${process.env.GRAPH_STUDIO}`],
     credentials: true,
   };
 
