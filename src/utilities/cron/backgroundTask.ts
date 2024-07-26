@@ -19,29 +19,29 @@ export class BackgroundTask extends Tasks{
       //  this.TestTask()
       // });
 
-      // cron.schedule('*/10 * * * *', () => {  // execute every 10 minutes
-      //   this.processTopkeywords();
-      // });
+      cron.schedule('*/10 * * * *', () => {  // execute every 10 minutes
+        this.processTopkeywords();
+      });
 
-      // cron.schedule('*/10 * * * *', () => {  // execute every 10 minutes
-      //   this.processTranscriptSummary();
-      // });
+      cron.schedule('*/10 * * * *', () => {  // execute every 10 minutes
+        this.processTranscriptSummary();
+      });
 
-      cron.schedule('*/2 * * * *', () => {  // execute every 15 minutes
+      cron.schedule('*/15 * * * *', () => {  // execute every 15 minutes
         this.processQuestionSummary();
       });
 
-      // cron.schedule('*/10 * * * *', () => {  // execute every 20 minutes
-      //   this.downloadAndProcessVideoTranscribe();
-      // });
+      cron.schedule('*/10 * * * *', () => {  // execute every 20 minutes
+        this.downloadAndProcessVideoTranscribe();
+      });
 
       // cron.schedule('*/15 * * * *', () => {  // execute every 20 minutes
       //   this.processVideoTranscribe();
       // });
 
-      // cron.schedule('*/10 * * * *', () => {  // execute every 30 minutes
-      //   this.processVideoReels();
-      // });
+      cron.schedule('*/10 * * * *', () => {  // execute every 30 minutes
+        this.processVideoReels();
+      });
     } else {
       console.log('Interview cron job is disabled.');
     }
