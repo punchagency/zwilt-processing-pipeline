@@ -8,7 +8,7 @@ export class Task {
   _id: string;
 
   @Field({ nullable: true })
-  @prop()
+  @prop({default: false})
   shouldRunInterviewCron?: boolean;
 
   @Field({ nullable: true })
