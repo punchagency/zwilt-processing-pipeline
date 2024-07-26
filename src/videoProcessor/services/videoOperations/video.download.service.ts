@@ -5,7 +5,6 @@ import path from 'path';
 import fs from 'fs-extra';
 import {
   CONSTANTS,
-  scriptDirectory,
   videoReelsDownloadPath,
   videoReelsProcessingPath,
   videoTranscribeDownloadPath,
@@ -16,12 +15,14 @@ import VideoProcessorModel from '../../../videoProcessor/models/videoProcessor.m
 import {filterUrl} from '../utils';
 import {VIDEO_OPERATION_TYPE} from '../enum';
 import {convertVideoToMP3} from '../audioOperations/video.to.audio.service';
+import ErrorLogService from '../../../errorLog/error.log.service';
 
+const errorLogService = new ErrorLogService();
 export async function fetchVideosToProcess(type: VIDEO_OPERATION_TYPE) {
   const videoProcessingPathType = type === VIDEO_OPERATION_TYPE.TRANSCRIBE
       ? videoTranscribeProcessingPath
       : videoReelsProcessingPath;
-  const processingDir = join(scriptDirectory, videoProcessingPathType);
+  const processingDir = join(__dirname, videoProcessingPathType);
   fs.readdir(processingDir, async (err, files) => {
     if (err) {
       console.error('Error reading the processing folder:', err);
@@ -100,7 +101,7 @@ export const downloadVideosLocally = async (type: VIDEO_OPERATION_TYPE) => {
              type === VIDEO_OPERATION_TYPE.TRANSCRIBE
               ? videoTranscribeDownloadPath
               : videoReelsDownloadPath;
-          const path = join(scriptDirectory, videoShortsDownloadPathType);
+          const path = join(__dirname, videoShortsDownloadPathType);
           await Promise.all(
             validLinks.map((url: any) =>
               download(url, path, {
@@ -112,7 +113,6 @@ export const downloadVideosLocally = async (type: VIDEO_OPERATION_TYPE) => {
           .then(() => {
             if (validLinks.length > 0) {
               console.log('Videos Downloaded...');
-              return;
               switch (type) {
                 case VIDEO_OPERATION_TYPE.TRANSCRIBE:
                   convertVideoToMP3();
@@ -137,10 +137,12 @@ export const downloadVideosLocally = async (type: VIDEO_OPERATION_TYPE) => {
           })
           .catch(error => {
             console.log('Error occurred when downloading videos.', error);
+            errorLogService.logAndNotifyError('downloadInterviewVideosLocally', error);
           });
       })
       .catch(err => {
         console.log('An error occurred while checking the links: ', err);
+        errorLogService.logAndNotifyError('downloadInterviewVideosLocally', err);
       });
   } else {
     return new ClientResponse(404, false, 'No videos to process', null);

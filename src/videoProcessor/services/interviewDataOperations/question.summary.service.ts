@@ -1,6 +1,9 @@
 import { openAIService } from '../../../utilities/openAi/openAi';
 import ClientResponse from '../../../utilities/response';
 import AssessmentResponseModel from '../../../interview/models/assessments/assessment.response.model';
+import ErrorLogService from '../../../errorLog/error.log.service';
+
+const errorLogService = new ErrorLogService();
 
 export const getQuestionsFromDatabase = async (): Promise<ClientResponse | null> => {
   try {
@@ -34,6 +37,7 @@ export const getQuestionsFromDatabase = async (): Promise<ClientResponse | null>
           }
         } catch (err) {
           console.error(`Error processing assessment with ID ${response._id}:`, err);
+          await errorLogService.logAndNotifyError('processQuestionSummary', err);
           // Continue with the next assessment
           continue;
         }
@@ -53,6 +57,7 @@ export const getQuestionsFromDatabase = async (): Promise<ClientResponse | null>
     return new ClientResponse(200, true, "Summarization completed", null);
   } catch (error) {
     console.error("Error fetching data:", error);
+    await errorLogService.logAndNotifyError('processQuestionSummary', error);
     throw error;
   }
 };
@@ -87,6 +92,7 @@ const useOpenAI = async (questionToSummarize: string): Promise<string | null> =>
     }
   } catch (error) {
     console.error('An error occurred while generating the summary:', error);
+    await errorLogService.logAndNotifyError('processQuestionSummary', error);
     return null;
   }
 };
@@ -99,6 +105,7 @@ const updateDocument = async (_id: string, summary: string): Promise<void> => {
     console.log('Updated questionSummary in database:', response?.questionSummary);
   } catch (error) {
     console.error('Error updating questionSummary documents:', error);
+    await errorLogService.logAndNotifyError('processQuestionSummary', error);
     throw error;
   }
 };

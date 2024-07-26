@@ -1,6 +1,7 @@
 import { GenerateStatus } from './../../../interview/models/assessments/interview.assessments.schema';
 import { openAIService } from '../../../utilities/openAi/openAi';
 import interviewAssessmentModel from '../../../interview/models/assessments/interview.assessments.model'
+import ErrorLogService from '../../../errorLog/error.log.service';
 
 interface IUpdateSummaryInput {
   _id: string;
@@ -10,7 +11,7 @@ interface IUpdateSummaryInput {
   categoryLength: number,
 }
 
-
+const errorLogService = new ErrorLogService();
 export const getTranscriptsFromDatabase = async (): Promise<void> => {
   try {
     let anyAssessmentProcessed = false; // Flag to track if any assessment was processed
@@ -60,6 +61,7 @@ export const getTranscriptsFromDatabase = async (): Promise<void> => {
     return await getTranscriptsFromDatabase(); // Await the recursive call
   } catch (error) {
     console.error('Error fetching assessments without summary:', error);
+    await errorLogService.logAndNotifyError('processTranscriptSummary', error);
     throw error; // Rethrow the error to propagate it up the chain
   }
 };
@@ -138,6 +140,7 @@ export const generateTranscriptSummary = async (textToSummarize: string) => {
     }
   } catch (error) {
     console.error('An error occurred while generating the summary:', error);
+    await errorLogService.logAndNotifyError('processTranscriptSummary', error);
     throw error;
   }
 };
@@ -158,6 +161,7 @@ const updateDocument = async (input: IUpdateSummaryInput, summary: any) => {
     return response;
   } catch (error) {
     console.error('Error updating documents:', error);
+    await errorLogService.logAndNotifyError('processTranscriptSummary', error);
     throw error;
   }
 };

@@ -5,6 +5,7 @@ import { generateTalentTopKeywords } from './../../videoProcessor/services/inter
 import { getTranscriptsFromDatabase } from "../../videoProcessor/services/interviewDataOperations/transcript.summary.service";
 import VideoReelService from "../../videoProcessor/services/videoOperations/video.reel.service";
 import { fetchVideosToProcess } from '../../videoProcessor/services/videoOperations/video.download.service';
+import { convertVideoToMP3 } from '../../videoProcessor/services/audioOperations/video.to.audio.service';
 
 @Service()
 export class Tasks {
@@ -32,8 +33,12 @@ export class Tasks {
     await this.videoReelService.processVideoReel();
   }
 
-  async processVideoTranscribe() {
+  async downloadAndProcessVideoTranscribe() {
     await fetchVideosToProcess(VIDEO_OPERATION_TYPE.TRANSCRIBE);
+  }
+  
+  async processVideoTranscribe() {
+    await convertVideoToMP3();
   }
 
 }

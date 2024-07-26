@@ -1,7 +1,9 @@
 import axios from 'axios'
+import ErrorLogService from '../../errorLog/error.log.service';
 import fs from 'fs-extra'
 import { join } from 'path';
 
+const errorLogService = new ErrorLogService();
 export async function assemblyTranscribeAudio() {
   try {
     
@@ -45,6 +47,7 @@ while (true) {
   }
 }
   } catch (error) {
-    console.error('Error converting video to MP3:', error);
+    console.error('Error converting video to MP3:--', error);
+    await errorLogService.logAndNotifyError('assemblyTranscribeAudio', error);
   }
 }

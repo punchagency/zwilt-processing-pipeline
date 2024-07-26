@@ -3,7 +3,6 @@ import fs from 'fs-extra';
 import {join} from 'path';
 import {
   convertedAudioPath,
-  scriptDirectory,
   videoCleanUpDownloadPath,
   videoTranscribeDownloadPath,
   videoTranscribeProcessingPath,
@@ -14,7 +13,9 @@ import {changeFileExtension, deleteFilesInDirectory, moveFile} from '../utils';
 import ClientResponse from '../../../utilities/response';
 import {convertVideoToMP3} from '../audioOperations/video.to.audio.service';
 import {cleanUpVideos} from './video.cleanup.service';
+import ErrorLogService from '../../../errorLog/error.log.service';
 
+const errorLogService = new ErrorLogService();
 export const assemblyAITranscribeAudio =
   async function executeAssemblyAITranscibeAudio() {
     try {
@@ -23,20 +24,20 @@ export const assemblyAITranscribeAudio =
         authorization: 'c38dc46e6b414f5e8b2f67d28afe1755',
       };
 
-      const convertedAudioDir = join(scriptDirectory, convertedAudioPath);
+      const convertedAudioDir = join(__dirname, convertedAudioPath);
       const audioFiles = fs.readdirSync(convertedAudioDir);
 
       if (audioFiles.length > 0) {
         const audioFileName = audioFiles[0];
         const convertedAudioFilePath = join(
-          scriptDirectory,
+          __dirname,
           convertedAudioPath + '/' + audioFileName
         );
         const processingDir = join(
-          scriptDirectory,
+          __dirname,
           videoTranscribeProcessingPath
         );
-        const path = join(scriptDirectory, convertedAudioPath, audioFileName);
+        const path = join(__dirname, convertedAudioPath, audioFileName);
         const audioData = await fs.readFile(path);
         console.log('Connecting to assembly AI...');
         const uploadResponse = await axios.post(
@@ -96,6 +97,7 @@ export const assemblyAITranscribeAudio =
               })
               .catch(err => {
                 console.error('Error moving file:', err);
+               errorLogService.logAndNotifyError('videoTranscribe', err);
               });
             polling = false;
           } else if (transcriptionResult.status === 'error') {
@@ -116,6 +118,7 @@ export const assemblyAITranscribeAudio =
       }
     } catch (error) {
       console.error('Error transcribing audio:', error);
+      await errorLogService.logAndNotifyError('videoTranscribe', error);
       return undefined;
     }
     return undefined;
@@ -128,17 +131,17 @@ const updateDocument = async (
 ) => {
   try {
     const inputVideoPath = join(
-      scriptDirectory,
+      __dirname,
       videoTranscribeDownloadPath + '/' + initialFilename
     );
     const videoCleanUpDownloadDir = join(
-      scriptDirectory,
+      __dirname,
       videoCleanUpDownloadPath
     );
 
-    const filter = {'videos.video_link': initialFilename};
-    const update = {$set: {'videos.$.transcript': transcriptionResult}};
-    await AssessmentResponseModel.findOneAndUpdate(filter, update, {new: true});
+    const filter = {'video_link': initialFilename};
+    const update = {$set: {'transcript': transcriptionResult}};
+    await AssessmentResponseModel.findOneAndUpdate(filter, update, { new: true });
 
     const videoProcessorUpdateFilter = {'videos.video_link': initialFilename};
     const videoProcessorUpdate = {$set: {'videos.$.isTranscribed': true}};
@@ -152,16 +155,17 @@ const updateDocument = async (
     deleteFilesInDirectory(processingDir);
     moveFile(inputVideoPath, videoCleanUpDownloadDir)
       .then(() => {
-        // return
         console.log(`Transcribe Flow Completed for ${initialFilename}`);
-        convertVideoToMP3();
+        convertVideoToMP3().then(() => {
         cleanUpVideos();
+        });
       })
       .catch(err => {
         console.log('Error deleting file...', err);
       });
   } catch (error) { 
     console.error('Error updating documents:', error);
+    await errorLogService.logAndNotifyError('videoTranscribe', error);
     throw error;
   }
 };

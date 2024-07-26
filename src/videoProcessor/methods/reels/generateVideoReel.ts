@@ -9,8 +9,9 @@ import { ReturnModelType } from "@typegoose/typegoose";
 import InterviewAssessmentModel from "../../../interview/models/assessments/interview.assessments.model";
 import { deleteFilesInDirectory } from "../../../videoProcessor/services/utils";
 import { InterviewReelTranscript } from "../../../interview/models/assessments/interview.assessments.schema";
+import ErrorLogService from "../../../errorLog/error.log.service";
 
-
+const errorLogService = new ErrorLogService();
 export default async function generateVideoReel(
     videoProcessor: ReturnModelType<typeof VideoProcessor>,
     assessmentId: string,
@@ -42,6 +43,7 @@ export default async function generateVideoReel(
         } catch (jsonError) {
             console.error('JSON parse error:', jsonError);
             console.error('Response:', response);
+            await errorLogService.logAndNotifyError('generateVideoReel', jsonError);
             return { error: 'Failed to parse response from OpenAI' };
         }
 
@@ -119,6 +121,7 @@ export default async function generateVideoReel(
 
     } catch (error) {
         console.error('Error in generateVideoReel:', error);
+        await errorLogService.logAndNotifyError('generateVideoReel', error);
         return new ClientResponse(500, false, 'error', { error: 'Failed to generate video reel' });
     }
   }
