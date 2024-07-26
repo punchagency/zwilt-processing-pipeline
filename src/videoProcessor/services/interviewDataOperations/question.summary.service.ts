@@ -22,11 +22,18 @@ export const getQuestionsFromDatabase = async (): Promise<ClientResponse | null>
         console.log("No transcript record to summarize");
         return new ClientResponse(404, false, "No transcript record to summarize", null);
       }
-      console.log("assessmentsWithoutQuestionSummary....[......]", assessmentsWithoutQuestionSummary);
+  
       let assessmentsProcessed = false; // Flag to track if any assessments were processed in this loop iteration
 
       for (const response of assessmentsWithoutQuestionSummary) {
         try {
+          // Check if the document has been updated by another process before processing
+          const currentDocument = await AssessmentResponseModel.findById(response._id, 'questionSummary');
+          if (currentDocument && currentDocument.questionSummary) {
+            console.log(`Assessment with ID ${response._id} has already been processed. Skipping.`);
+            continue;
+          }
+
           console.log("AssessmentResponseId...", response._id);
           const questionToSummarize = response.question;
           const summarizedQuestion = await useOpenAI(questionToSummarize);
@@ -61,65 +68,6 @@ export const getQuestionsFromDatabase = async (): Promise<ClientResponse | null>
     throw error;
   }
 };
-
-// const maxAssessmentsPerRun = 10; // or another appropriate number
-
-// export const getQuestionsFromDatabase = async (): Promise<ClientResponse | null> => {
-//   try {
-//     let anyAssessmentProcessed = false;
-
-//     while (true) {
-//       const assessmentsWithoutQuestionSummary = await AssessmentResponseModel.find({
-//         $or: [
-//           { questionSummary: { $exists: false } },
-//           { questionSummary: { $in: [null, ""] } },
-//         ]
-//       }, '_id question')
-//         .sort({ createdAt: 1 })
-//         .limit(maxAssessmentsPerRun);
-
-//       if (assessmentsWithoutQuestionSummary.length === 0) {
-//         console.log("No transcript record to summarize");
-//         return new ClientResponse(404, false, "No transcript record to summarize", null);
-//       }
-
-//       let assessmentsProcessed = false;
-
-//       for (const response of assessmentsWithoutQuestionSummary) {
-//         try {
-//           console.log("AssessmentResponseId...", response._id);
-//           const questionToSummarize = response.question;
-//           const summarizedQuestion = await useOpenAI(questionToSummarize);
-//           if (summarizedQuestion) {
-//             await updateDocument(response._id, summarizedQuestion);
-//             anyAssessmentProcessed = true;
-//             assessmentsProcessed = true;
-//           }
-//         } catch (err) {
-//           console.error(`Error processing assessment with ID ${response._id}:`, err);
-//           await errorLogService.logAndNotifyError('processQuestionSummary', err);
-//           continue;
-//         }
-//       }
-
-//       if (!assessmentsProcessed) {
-//         break; // Exit loop if no assessments were processed
-//       }
-//     }
-
-//     if (!anyAssessmentProcessed) {
-//       console.log("No assessment with question summary to process.");
-//       return new ClientResponse(200, true, "No assessment with question summary to process.", null);
-//     }
-
-//     return new ClientResponse(200, true, "Summarization completed", null);
-//   } catch (error) {
-//     console.error("Error fetching data:", error);
-//     await errorLogService.logAndNotifyError('processQuestionSummary', error);
-//     throw error;
-//   }
-// };
-
 
 const useOpenAI = async (questionToSummarize: string): Promise<string | null> => {
   try {
@@ -158,10 +106,15 @@ const useOpenAI = async (questionToSummarize: string): Promise<string | null> =>
 
 const updateDocument = async (_id: string, summary: string): Promise<void> => {
   try {
-    const filter = { _id };
+    const filter = { _id, questionSummary: { $exists: false } };
     const update = { $set: { questionSummary: summary } };
     const response = await AssessmentResponseModel.findOneAndUpdate(filter, update, { new: true });
-    console.log('Updated questionSummary in database:', response?.questionSummary);
+
+    if (response) {
+      console.log('Updated questionSummary in database:', response.questionSummary);
+    } else {
+      console.log(`Assessment with ID ${_id} has already been processed. Skipping update.`);
+    }
   } catch (error) {
     console.error('Error updating questionSummary documents:', error);
     await errorLogService.logAndNotifyError('processQuestionSummary', error);
