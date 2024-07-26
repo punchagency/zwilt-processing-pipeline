@@ -1,6 +1,7 @@
 import ffmpeg from 'fluent-ffmpeg';
 import { join, basename } from 'path';
 import fs from 'fs';
+import { ensureDir } from 'fs-extra'; 
 import { existsSync } from 'fs-extra';  
 // import { convertedAudioPath, scriptDirectory, videoTranscribeDownloadPath } from '../../../utilities/constants';
 import { assemblyAITranscribeAudio } from '../videoOperations/video.transcribe.service';
@@ -8,12 +9,13 @@ import ErrorLogService from '../../../errorLog/error.log.service';
 
 const errorLogService = new ErrorLogService();
 export async function convertVideoToMP3() {
-  // const inputDirectory = join(scriptDirectory, videoTranscribeDownloadPath);
-  // const outputDirectory = join(scriptDirectory, convertedAudioPath);
   const inputDirectory = join(__dirname, '../../storage/videoTranscribe/downloads');
   const outputDirectory = join(__dirname, '../../storage/videoTranscribe/convertedAudios');
 
   try {
+     // Ensure the output directory exists
+     await ensureDir(outputDirectory);
+
     if (!existsSync(inputDirectory)) {
       console.error('Input directory not found.');
       return;

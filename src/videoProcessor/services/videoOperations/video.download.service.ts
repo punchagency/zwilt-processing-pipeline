@@ -1,7 +1,7 @@
 import https from 'https';
 import download from 'download';
 import {join} from 'path';
-import path from 'path';
+// import path from 'path';
 import fs from 'fs-extra';
 import {
   CONSTANTS,
@@ -18,29 +18,60 @@ import {convertVideoToMP3} from '../audioOperations/video.to.audio.service';
 import ErrorLogService from '../../../errorLog/error.log.service';
 
 const errorLogService = new ErrorLogService();
+// export async function fetchVideosToProcess(type: VIDEO_OPERATION_TYPE) {
+//   const videoProcessingPathType = type === VIDEO_OPERATION_TYPE.TRANSCRIBE
+//       ? videoTranscribeProcessingPath
+//       : videoReelsProcessingPath;
+//   const processingDir = join(__dirname, videoProcessingPathType);
+//   fs.readdir(processingDir, async (err, files) => {
+//     if (err) {
+//       console.error('Error reading the processing folder:', err);
+//     } else {
+//       files.forEach(file => {
+//         const filePath = path.join(CONSTANTS.PROCESSING_FOLDER, file);
+//         fs.unlink(filePath, deleteError => {
+//           if (deleteError) {
+//             console.error(`Error deleting file ${file}:`, deleteError);
+//           } else {
+//             console.log(`Deleted file: ${file}`);
+//           }
+//         });
+//       });
+//       downloadVideosLocally(type);
+//     }
+//   });
+// }
+
 export async function fetchVideosToProcess(type: VIDEO_OPERATION_TYPE) {
   const videoProcessingPathType = type === VIDEO_OPERATION_TYPE.TRANSCRIBE
       ? videoTranscribeProcessingPath
       : videoReelsProcessingPath;
   const processingDir = join(__dirname, videoProcessingPathType);
-  fs.readdir(processingDir, async (err, files) => {
-    if (err) {
-      console.error('Error reading the processing folder:', err);
-    } else {
-      files.forEach(file => {
-        const filePath = path.join(CONSTANTS.PROCESSING_FOLDER, file);
-        fs.unlink(filePath, deleteError => {
-          if (deleteError) {
-            console.error(`Error deleting file ${file}:`, deleteError);
-          } else {
-            console.log(`Deleted file: ${file}`);
-          }
-        });
-      });
-      downloadVideosLocally(type);
-    }
-  });
+
+  try {
+    // Ensure the processing directory exists
+    await fs.ensureDir(processingDir);
+
+    // Read the directory contents
+    const files = await fs.readdir(processingDir);
+
+    // Delete files in the directory
+    await Promise.all(files.map(file => {
+      const filePath = join(processingDir, file); // Fixed path join
+      return fs.unlink(filePath)
+        .then(() => console.log(`Deleted file: ${file}`))
+        .catch(deleteError => console.error(`Error deleting file ${file}:`, deleteError));
+    }));
+
+    // Proceed to download videos
+    await downloadVideosLocally(type);
+
+  } catch (err) {
+    console.error('Error processing the folder:', err);
+    errorLogService.logAndNotifyError('fetchVideosToProcess', err);
+  }
 }
+
 
 export const downloadVideosLocally = async (type: VIDEO_OPERATION_TYPE) => {
   const result = await VideoProcessorModel.find({})
