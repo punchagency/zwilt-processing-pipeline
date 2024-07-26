@@ -27,7 +27,7 @@ export class BackgroundTask extends Tasks{
       //   this.processTranscriptSummary();
       // });
 
-      cron.schedule('*/15 * * * *', () => {  // execute every 15 minutes
+      cron.schedule('*/5 * * * *', () => {  // execute every 15 minutes
         this.processQuestionSummary();
       });
 
