@@ -1,6 +1,7 @@
 import cron from 'node-cron';
 import { Tasks } from './tasks';
 import { TaskModel } from './../../tasks/model/task.schema';
+import mongoose from 'mongoose';
 
 export class BackgroundTask extends Tasks {
   private async shouldRunInterviewCron(): Promise<boolean> {
@@ -14,14 +15,17 @@ export class BackgroundTask extends Tasks {
   }
 
   private async acquireLock(): Promise<boolean> {
+    const lockId = new mongoose.Types.ObjectId().toString(); // Unique lock ID for this instance
+    const lockExpiration = new Date(Date.now() + 5 * 60 * 1000); // Lock expires in 5 minutes
+
     try {
       const result = await TaskModel.updateOne(
-        { isCronRunning: { $ne: true } },  // Only update if isCronRunning is not true
-        { $set: { isCronRunning: true } },
-        { upsert: false }  // Don't create a new document if one doesn't exist
+        { isCronRunning: { $ne: true }, lockExpiresAt: { $lt: new Date() } },  // Ensure the previous lock is expired
+        { $set: { isCronRunning: true, lockId, lockExpiresAt: lockExpiration } },
+        { upsert: false }
       ).exec();
 
-      return result.modifiedCount === 1;  // Returns true if a document was modified
+      return result.modifiedCount === 1;
     } catch (error) {
       console.error('Error while acquiring cron job lock:', error);
       return false;
@@ -32,7 +36,7 @@ export class BackgroundTask extends Tasks {
     try {
       await TaskModel.updateOne(
         { isCronRunning: true },
-        { $set: { isCronRunning: false } }
+        { $set: { isCronRunning: false, lockExpiresAt: new Date(0) } }
       ).exec();
     } catch (error) {
       console.error('Error while releasing cron job lock:', error);
@@ -53,7 +57,7 @@ export class BackgroundTask extends Tasks {
 
   public async start() {
     if (await this.shouldRunInterviewCron()) {
-      cron.schedule('*/2 * * * *', () => {  // execute every 5 minutes
+      cron.schedule('*/5 * * * *', () => {
         this.processQuestionSummaryWithLock();
       });
     } else {

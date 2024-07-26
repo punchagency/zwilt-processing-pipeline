@@ -15,6 +15,14 @@ export class Task {
   @prop({default: false})
   isCronRunning?: boolean;
 
+  @Field({ nullable: true })
+  @prop({default: ''})
+  lockId?: string;
+
+  @Field()
+  @prop({ default: new Date(0), required: true })
+  lockExpiresAt: Date;
+
   @Field()
   @prop({ default: Date.now, required: true })
   createdAt: Date;
