@@ -6,7 +6,9 @@ import ClientResponse from '../../utilities/response';
 import { VIDEO_OPERATION_TYPE } from '../../videoProcessor/services/enum';
 import { ensureDirectoryExists, filterUrl } from '../../videoProcessor/services/utils';
 import fs from 'fs-extra';
+import ErrorLogService from '../../errorLog/error.log.service';
 
+const errorLogService = new ErrorLogService();
 const downloadVideosLocally = async (type: VIDEO_OPERATION_TYPE, links: string[]) => {
     try {
         if (links.length === 0) {
@@ -26,6 +28,7 @@ const downloadVideosLocally = async (type: VIDEO_OPERATION_TYPE, links: string[]
             }))
         ).catch(error => {
             console.error('An error occurred while validating links:', error);
+            errorLogService.logAndNotifyError('downloadVideosLocally', error);
             return [];
         });
 
@@ -55,12 +58,14 @@ const downloadVideosLocally = async (type: VIDEO_OPERATION_TYPE, links: string[]
                 console.log(`File exists: ${filePath}`);
             } catch (err) {
                 console.error(`File does not exist: ${filePath}`);
+                await errorLogService.logAndNotifyError('downloadVideosLocally', err);
                 return new ClientResponse(500, false, `File not downloaded: ${filePath}`, null);
             }
         }
         return 'success';
     } catch (error) {
         console.error('Error occurred when downloading videos.', error);
+        await errorLogService.logAndNotifyError('downloadVideosLocally', error);
         return new ClientResponse(500, false, 'Internal Server Error', error.message);
     }
 };

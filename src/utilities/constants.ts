@@ -16,7 +16,7 @@ export const scriptDirectory = __dirname;
 
 //VIDEO_CLEANUP
 export const videoCleanUpDownloadPath =
-  '../../src/videoProcessor/storage/videoCleanUp/downloads';
+  '../../storage/videoCleanUp/downloads';
 export const videoCleanUpProcessingPath =
   '../../src/videoProcessor/storage/videoCleanUp/processing';
 export const videoCleanUpCompressedPath =
@@ -31,16 +31,16 @@ export const videoShortsUploadPath =
   '../../src/videoProcessor/storage/videoShorts/upload';
 //TRANSCRIBE
 export const videoTranscribeDownloadPath =
-  '../../src/videoProcessor/storage/videoTranscribe/downloads';
+  '../../storage/videoTranscribe/downloads';
 export const videoTranscribeProcessingPath =
-  '../../src/videoProcessor/storage/videoTranscribe/processing';
+  '../../storage/videoTranscribe/processing';
 export const convertedAudioPath =
-  '../../src/videoProcessor/storage/videoTranscribe/convertedAudios';
+  '../../storage/videoTranscribe/convertedAudios';
 //REEL
 export const videoReelsDownloadPath =
-  '../../src/videoProcessor/storage/videoReels/downloads';
+  '../../storage/videoReels/downloads';
 export const videoReelsProcessingPath =
-  '../../src/videoProcessor/storage/videoReels/processing';
+  '../../storage/videoReels/processing';
   
 export const videoClippingDownloadPath = 'src/videoProcessor/storage/videoClipping/download';
 export const videoClippingUploadPath = 'src/videoProcessor/storage/videoClipping/upload';
