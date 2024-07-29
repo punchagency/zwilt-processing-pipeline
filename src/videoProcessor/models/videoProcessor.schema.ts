@@ -14,8 +14,24 @@ import generateVideoReel from '../../videoProcessor/methods/reels/generateVideoR
 import { VIDEO_OPERATION_TYPE } from '../../videoProcessor/services/enum';
 import uploadFileToAws from '../../videoProcessor/methods/uploadFileToAws';
 import User from '../../users/models/users.schema';
+import updateVideoError from '../../videoProcessor/methods/updateVideoError';
 
 
+@ObjectType()
+@modelOptions({ options: { allowMixed: Severity.ALLOW } })
+export class ErrorLog {
+  @Field({ nullable: true })
+  @prop({ default: false })
+  errorFlag?: boolean;
+
+  @Field({ nullable: true })
+  @prop()
+  errorMessage?: string;
+
+  @Field({ nullable: true })
+  @prop({ default: 0 })
+  retriesCount?: number;
+}
 @ObjectType()
 export class Video {
   @Field()
@@ -64,9 +80,21 @@ class VideoProcessor {
   @prop()
   videos: Video[];
 
+  @Field(() => ErrorLog, { nullable: true })
+  @prop()
+  errorLog?: ErrorLog;
+
   @Field()
   @prop({default: Date.now()})
   createdAt: Date;
+
+  public static async updateVideoError(
+    this: ReturnModelType<typeof VideoProcessor>,
+    videoLink: string,
+    errorMessage: string
+  ): Promise<VideoProcessor | null> {
+    return updateVideoError(this, videoLink, errorMessage);
+  }
 
   public static async saveVideoData(
     this: ReturnModelType<typeof VideoProcessor>,

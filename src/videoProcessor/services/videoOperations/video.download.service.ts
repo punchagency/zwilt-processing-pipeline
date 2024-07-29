@@ -19,30 +19,6 @@ import ErrorLogService from '../../../errorLog/error.log.service';
 import InterviewAssessmentModel from '../../../interview/models/assessments/interview.assessments.model';
 
 const errorLogService = new ErrorLogService();
-// export async function fetchVideosToProcess(type: VIDEO_OPERATION_TYPE) {
-//   const videoProcessingPathType = type === VIDEO_OPERATION_TYPE.TRANSCRIBE
-//       ? videoTranscribeProcessingPath
-//       : videoReelsProcessingPath;
-//   const processingDir = join(__dirname, videoProcessingPathType);
-//   fs.readdir(processingDir, async (err, files) => {
-//     if (err) {
-//       console.error('Error reading the processing folder:', err);
-//     } else {
-//       files.forEach(file => {
-//         const filePath = path.join(CONSTANTS.PROCESSING_FOLDER, file);
-//         fs.unlink(filePath, deleteError => {
-//           if (deleteError) {
-//             console.error(`Error deleting file ${file}:`, deleteError);
-//           } else {
-//             console.log(`Deleted file: ${file}`);
-//           }
-//         });
-//       });
-//       downloadVideosLocally(type);
-//     }
-//   });
-// }
-
 export async function fetchVideosToProcess(type: VIDEO_OPERATION_TYPE) {
   const videoProcessingPathType = type === VIDEO_OPERATION_TYPE.TRANSCRIBE
       ? videoTranscribeProcessingPath
@@ -84,9 +60,16 @@ export const downloadVideosLocally = async (type: VIDEO_OPERATION_TYPE) => {
     const userIds = assessments.map((assessment: any) => assessment?.user?.toString());
 
     // Fetch all VideoProcessor documents
-    const videoProcessors = await VideoProcessorModel.find({})
+    const videoProcessors = await VideoProcessorModel.find({
+      $or: [
+        { 'errorLog.errorFlag': { $ne: true } },
+        { 'errorLog.errorFlag': { $exists: false } },
+        { errorLog: { $exists: false } }
+      ]
+    })
       .select('-_id -videos._id -createdAt -__v')
       .exec();
+    
 
     if (!videoProcessors || videoProcessors.length === 0) {
       return new ClientResponse(404, false, 'No video to process', null);
