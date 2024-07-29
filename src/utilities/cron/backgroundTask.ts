@@ -37,7 +37,7 @@ export class BackgroundTask extends Tasks {
         this.processQuestionSummary();
       });
 
-      cron.schedule("*/15 * * * *", () => {
+      cron.schedule("*/5 * * * *", () => {
         // execute every 20 minutes
         this.downloadAndProcessVideoTranscribe();
       });
