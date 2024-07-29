@@ -68,7 +68,7 @@ export async function convertVideoToMP3() {
 
       } catch (conversionError) {
         console.error(`Skipping file due to error: ${inputVideo}`, conversionError);
-      }
+      }//
     }
   } catch (error) {
     console.error('Error:', error.message);
