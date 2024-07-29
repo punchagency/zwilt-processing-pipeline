@@ -85,10 +85,12 @@ export const downloadVideosLocally = async (type: VIDEO_OPERATION_TYPE) => {
     return {
       user: data.user,
       videos:
-        type === VIDEO_OPERATION_TYPE.TRANSCRIBE
-          ? data.videos.filter(
-              (item: any) => item.isTranscribed === false && item.video_link
-            )
+      type === VIDEO_OPERATION_TYPE.TRANSCRIBE
+      ? data.videos.filter(
+          (item: any) => 
+            (item.isTranscribed === false || item.isCleanedUp === false) &&
+            item.video_link
+        )
           : type === VIDEO_OPERATION_TYPE.VIDEO_REEL
           ? data.videos.filter(
               (item: any) => item.isReelGenerated === false && item.video_link
