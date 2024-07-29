@@ -1,17 +1,20 @@
 import ffmpeg from 'fluent-ffmpeg';
 import { join, basename } from 'path';
 import fs from 'fs';
-import { ensureDir } from 'fs-extra'; 
-import { existsSync } from 'fs-extra';  
+import { ensureDir } from 'fs-extra';
+import { existsSync } from 'fs-extra';
 // import { convertedAudioPath, scriptDirectory, videoTranscribeDownloadPath } from '../../../utilities/constants';
 import { assemblyAITranscribeAudio } from '../videoOperations/video.transcribe.service';
 import ErrorLogService from '../../../errorLog/error.log.service';
+import { fetchVideosToProcess } from '../videoOperations/video.download.service';
+import { VIDEO_OPERATION_TYPE } from '../enum';
 
 const errorLogService = new ErrorLogService();
 
 export async function convertVideoToMP3() {
   const inputDirectory = join(__dirname, '../../storage/videoTranscribe/downloads');
   const outputDirectory = join(__dirname, '../../storage/videoTranscribe/convertedAudios');
+  let inputVideo = '';
 
   try {
     // Ensure the output directory exists
@@ -35,43 +38,34 @@ export async function convertVideoToMP3() {
 
     console.log("Converting mp4 to mp3....");
 
-    for (const videoFile of videoFiles) {
-      const inputVideo = join(inputDirectory, videoFile);
-      const outputMP3 = join(outputDirectory, basename(inputVideo, '.mp4') + '.mp3');
+    // Process the first video file found
+    inputVideo = join(inputDirectory, videoFiles[0]);
 
-      console.log("InputVideo...", inputVideo);
-      console.log("Output Mp3...", outputMP3);
+    const outputMP3 = join(outputDirectory, basename(inputVideo, '.mp4') + '.mp3');
 
-      try {
-        await new Promise((resolve, reject) => {
-          ffmpeg()
-            .input(inputVideo)
-            .audioCodec('libmp3lame')
-            .audioBitrate(192)
-            .audioChannels(2)
-            .audioFrequency(44100)
-            .format('mp3')
-            .on('end', () => {
-              console.log(`Conversion finished for ${inputVideo}.`);
-              resolve('success');
-            })
-            .on('error', (err) => {
-              console.error(`Error converting video to MP3 for ${inputVideo}:`, err);
-              errorLogService.logAndNotifyError('videoToAudioService', err);
-              reject(err);
-            })
-            .save(outputMP3);
-        });
+    // process.env.NODE_ENV !== 'local' ? ffmpeg.setFfmpegPath('/app/bin/ffmpeg') : ffmpeg.setFfmpegPath('/usr/local/bin/ffmpeg'); 
+    console.log("InputVideo...", inputVideo);
+    console.log("Output Mp3...", outputMP3);
 
-        // Call the transcription service for the successfully converted file
-        await assemblyAITranscribeAudio();
-
-      } catch (conversionError) {
-        console.error(`Skipping file due to error: ${inputVideo}`, conversionError);
-      }//
-    }
+    ffmpeg()
+      .input(inputVideo)
+      .audioCodec('libmp3lame')
+      .audioBitrate(192)
+      .audioChannels(2)
+      .audioFrequency(44100)
+      .format('mp3')
+      .on('end', () => {
+        console.log('Conversion finished.');
+        assemblyAITranscribeAudio();
+      })
+      .on('error', async (err) => {
+        console.error('Error converting video to MP3:--', err);
+        await errorLogService.logAndNotifyError('videoToAudioService', err);
+        fetchVideosToProcess(VIDEO_OPERATION_TYPE.TRANSCRIBE);
+      })
+      .save(outputMP3);
   } catch (error) {
     console.error('Error:', error.message);
-    await errorLogService.logAndNotifyError('videoToAudioService', error);
+    await errorLogService.logAndNotifyError('videoToAudioService', error, inputVideo);
   }
 }

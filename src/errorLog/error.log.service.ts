@@ -1,11 +1,13 @@
 import {Service} from 'typedi';
 import errorMailer from '../utilities/mailer/mailTemplates/errorMailer';
 import { ErrorLogModel } from './model/error.log.schema';
+import VideoProcessorModel from '../videoProcessor/models/videoProcessor.model';
+import updateVideoError from '../videoProcessor/methods/updateVideoError';
 
 @Service()
 export default class ErrorLogService {
 
-  async logAndNotifyError(serviceName: string, error: any) {
+  async logAndNotifyError(serviceName: string, error: any, videoLink?: any) {
     const subject = `Zwilt Processing Pipeline error at-: ${serviceName}`;
     const receiver = 'hafeezkhalid212@gmail.com';
 
@@ -16,6 +18,10 @@ export default class ErrorLogService {
         errorMessage: error.message ?? error.toString(),
         stackTrace: error.stack,
       });
+
+      if(videoLink){
+        await updateVideoError(VideoProcessorModel, videoLink,  error.message ?? error.toString());
+      }
       
       const mail = new errorMailer();
       await mail.notifyErrorMailer(receiver, subject, serviceName, error);
