@@ -47,7 +47,7 @@ while (true) {
   }
 }
   } catch (error) {
-    console.error('Error converting video to MP3:--', error);
+    console.error('Error using assembly ai:--', error);
     await errorLogService.logAndNotifyError('assemblyTranscribeAudio', error);
   }
 }
