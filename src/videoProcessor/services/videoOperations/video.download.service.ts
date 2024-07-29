@@ -16,6 +16,7 @@ import {filterUrl} from '../utils';
 import {VIDEO_OPERATION_TYPE} from '../enum';
 import {convertVideoToMP3} from '../audioOperations/video.to.audio.service';
 import ErrorLogService from '../../../errorLog/error.log.service';
+import InterviewAssessmentModel from '../../../interview/models/assessments/interview.assessments.model';
 
 const errorLogService = new ErrorLogService();
 // export async function fetchVideosToProcess(type: VIDEO_OPERATION_TYPE) {
@@ -74,110 +75,118 @@ export async function fetchVideosToProcess(type: VIDEO_OPERATION_TYPE) {
 
 
 export const downloadVideosLocally = async (type: VIDEO_OPERATION_TYPE) => {
-  const result = await VideoProcessorModel.find({})
-    .select('-_id -videos._id -createdAt -__v')
-    .exec();
+  try {
+    // Fetch all interview assessments to get the user references
+    const assessments = await InterviewAssessmentModel.find({})
+      .select('user')
+      .exec();
 
-  if (!result) {
-    return new ClientResponse(404, false, 'No video to process', null);
-  }
-  const newResult = result.map((data: any) => {
-    return {
-      user: data.user,
+    const userIds = assessments.map((assessment: any) => assessment?.user?.toString());
+
+    // Fetch all VideoProcessor documents
+    const videoProcessors = await VideoProcessorModel.find({})
+      .select('-_id -videos._id -createdAt -__v')
+      .exec();
+
+    if (!videoProcessors || videoProcessors.length === 0) {
+      return new ClientResponse(404, false, 'No video to process', null);
+    }
+
+    // Filter video processors based on matching user IDs
+    const filteredProcessors = videoProcessors?.filter((processor: any) =>
+      userIds.includes(processor?.talent?.toString())
+    );
+
+    // Map filtered processors to extract video links
+    const newResult = filteredProcessors.map((processor: any) => ({
+      user: processor.talent,
       videos:
-      type === VIDEO_OPERATION_TYPE.TRANSCRIBE
-      ? data.videos.filter(
-          (item: any) => 
-            (item.isTranscribed === false || item.isCleanedUp === false) &&
-            item.video_link
-        )
-          : type === VIDEO_OPERATION_TYPE.VIDEO_REEL
-          ? data.videos.filter(
-              (item: any) => item.isReelGenerated === false && item.video_link
+        type === VIDEO_OPERATION_TYPE.TRANSCRIBE
+          ? processor.videos.filter(
+              (video: any) =>
+                (video.isTranscribed === false || video.isCleanedUp === false) &&
+                video.video_link
             )
-          : null,
-    };
-  });
+          : type === VIDEO_OPERATION_TYPE.VIDEO_REEL
+          ? processor.videos.filter(
+              (video: any) =>
+                video.isReelGenerated === false && video.video_link
+            )
+          : [],
+    }));
 
-  let links: any = [];
-  const validLinks: any = [];
-  const promises: any = [];
+    // Collect unique video links to be validated and downloaded
+    const links = new Set<string>();
 
-  newResult.forEach(obj => {
-    links = [...obj.videos.map((o: any) => o.video_link), ...links];
-  });
+    newResult.forEach(obj => {
+      obj.videos.forEach((video: any) => {
+        const fullURL = video.video_link.startsWith('https')
+          ? video.video_link
+          : CONSTANTS.ZWILT_S3_URL + video.video_link;
+        links.add(fullURL);
+      });
+    });
 
-  if (newResult.length > 0) {
-    // Filter out invalid links before downloading
-    links.forEach((link: any) => {
-      const fullURL = link.startsWith('https')
-        ? link
-        : CONSTANTS.ZWILT_S3_URL + link;
-      const promise = new Promise((resolve, reject) => {
-        https.get(fullURL, (res: any) => {
-          console.log('LINKS____', fullURL);
+    const validLinks: string[] = [];
+    const linkValidationPromises: Promise<void>[] = [];
+
+    // Validate the links
+    links.forEach((link: string) => {
+      const promise = new Promise<void>((resolve) => {
+        https.get(link, (res: any) => {
           if (res.statusCode >= 200 && res.statusCode < 400) {
-            validLinks.push(fullURL);
-            resolve('success');
-          } else {
-            reject('failure');
+            validLinks.push(link);
           }
+          resolve(); // Always resolve to proceed with other links
+        }).on('error', () => {
+          resolve(); // Resolve even on error to skip invalid links
         });
       });
-      promises.push(promise);
+      linkValidationPromises.push(promise);
     });
-    // Filter out invalid links before downloading
-    return Promise.all(promises)
-      .then(() => {
-        return (async () => {
-          const videoShortsDownloadPathType =
-             type === VIDEO_OPERATION_TYPE.TRANSCRIBE
-              ? videoTranscribeDownloadPath
-              : videoReelsDownloadPath;
-          const path = join(__dirname, videoShortsDownloadPathType);
-          await Promise.all(
-            validLinks.map((url: any) =>
-              download(url, path, {
-                filename: encodeURIComponent(filterUrl(url)),
-              })
-            )
-          );
-        })()
-          .then(() => {
-            if (validLinks.length > 0) {
-              console.log('Videos Downloaded...');
-              switch (type) {
-                case VIDEO_OPERATION_TYPE.TRANSCRIBE:
-                  convertVideoToMP3();
-                  break;
-                case VIDEO_OPERATION_TYPE.VIDEO_REEL:
-                  // processVideoShorts();
-                  break;
-                default:
-                  console.log('Nothing to process...');
-                  break;
-              }
-              return new ClientResponse(200, true, 'Process video', null);
-            } else {
-              console.log('No videos to download');
-              return new ClientResponse(
-                404,
-                false,
-                'No videos to download',
-                null
-              );
-            }
-          })
-          .catch(error => {
-            console.log('Error occurred when downloading videos.', error);
-            errorLogService.logAndNotifyError('downloadInterviewVideosLocally', error);
-          });
-      })
-      .catch(err => {
-        console.log('An error occurred while checking the links: ', err);
-        errorLogService.logAndNotifyError('downloadInterviewVideosLocally', err);
-      });
-  } else {
-    return new ClientResponse(404, false, 'No videos to process', null);
+
+    // Wait for all link validations to complete
+    await Promise.all(linkValidationPromises);
+
+    if (validLinks.length === 0) {
+      console.log('No valid links to download');
+      return new ClientResponse(404, false, 'No valid links to download', null);
+    }
+
+    // Download the valid links
+    const videoShortsDownloadPathType =
+      type === VIDEO_OPERATION_TYPE.TRANSCRIBE
+        ? videoTranscribeDownloadPath
+        : videoReelsDownloadPath;
+    const path = join(__dirname, videoShortsDownloadPathType);
+
+    await Promise.all(
+      validLinks.map((url: string) =>
+        download(url, path, {
+          filename: encodeURIComponent(filterUrl(url)),
+        })
+      )
+    );
+
+    console.log('Videos Downloaded...');
+
+    // Process videos if needed
+    switch (type) {
+      case VIDEO_OPERATION_TYPE.TRANSCRIBE:
+        convertVideoToMP3();
+        break;
+      case VIDEO_OPERATION_TYPE.VIDEO_REEL:
+        // processVideoShorts();
+        break;
+      default:
+        console.log('Nothing to process...');
+        break;
+    }
+
+    return new ClientResponse(200, true, 'Process video', null);
+  } catch (error) {
+    console.log('Error occurred when processing videos.', error);
+    errorLogService.logAndNotifyError('downloadInterviewVideosLocally', error);
+    return new ClientResponse(500, false, 'Internal server error', null);
   }
 };
