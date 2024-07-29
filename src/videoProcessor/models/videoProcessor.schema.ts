@@ -1,6 +1,7 @@
 import {
   modelOptions,
   prop,
+  Ref,
   ReturnModelType,
   Severity,
 } from '@typegoose/typegoose';
@@ -12,6 +13,7 @@ import downloadVideosLocally from '../../videoProcessor/methods/downloadVideosLo
 import generateVideoReel from '../../videoProcessor/methods/reels/generateVideoReel';
 import { VIDEO_OPERATION_TYPE } from '../../videoProcessor/services/enum';
 import uploadFileToAws from '../../videoProcessor/methods/uploadFileToAws';
+import User from '../../users/models/users.schema';
 
 
 @ObjectType()
@@ -50,6 +52,10 @@ export class Video {
 class VideoProcessor {
   @Field()
   _id: string;
+
+  @Field(() => String, {description: "Talent's application data"})
+  @prop({ref: () => User})
+  talent: Ref<User>;
 
   @Field()
   browserType?: string;
